@@ -1,0 +1,37 @@
+# Default settings for the visit-counter chart.
+# Override any of these at install time, e.g.: --set image.tag=1.2.0
+
+replicaCount: 3
+
+image:
+  repository: sathvik627/visit-counter
+  # Leave empty to use the chart's appVersion as the image tag
+  tag: ""
+  pullPolicy: IfNotPresent
+
+service:
+  type: NodePort
+  port: 80
+  targetPort: 8080
+  nodePort: 30082
+
+# Existing ConfigMap and Secret that hold the Redis connection settings
+redis:
+  configMapName: visit-counter-config
+  secretName: visit-counter-secret
+  secretKey: REDIS_PASSWORD
+
+resources:
+  requests:
+    cpu: "50m"
+    memory: "96Mi"
+  limits:
+    cpu: "250m"
+    memory: "192Mi"
+
+rollingUpdate:
+  maxSurge: 1
+  maxUnavailable: 0
+
+# Seconds a Pod keeps serving before shutdown (avoids dropped requests)
+preStopSleepSeconds: 5
