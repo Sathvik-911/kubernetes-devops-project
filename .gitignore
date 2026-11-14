@@ -1,5 +1,5 @@
 # Kubernetes Secrets - never commit real values
-**/secret.yaml
+**/*secret*.yaml
 
 # Terraform state and variables (used in a later phase)
 *.tfstate

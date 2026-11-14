@@ -16,3 +16,13 @@ metadata:
   namespace: kubernetes-learning
 data:
   readyz: "OK"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: visit-counter-config
+  namespace: kubernetes-learning
+data:
+  REDIS_HOST: "redis"
+  REDIS_PORT: "6379"
