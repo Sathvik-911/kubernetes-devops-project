@@ -1,0 +1,38 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: visit-counter-alerts
+  namespace: monitoring
+spec:
+  groups:
+    - name: visit-counter
+      rules:
+        - alert: VisitCounterNoReadyPods
+          expr: kube_deployment_status_replicas_available{namespace="kubernetes-learning", deployment="visit-counter"} == 0
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "visit-counter has no ready Pods"
+            description: "No visit-counter Pod has been ready for 1 minute. The app is down for all users. Check Redis and the readiness probe (/readyz)."
+
+        - alert: VisitCounterHighErrorRate
+          expr: |
+            sum(rate(visit_counter_http_requests_total{route="/", status=~"5.."}[5m]))
+              / sum(rate(visit_counter_http_requests_total{route="/"}[5m])) > 0.05
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: "visit-counter error rate above 5%"
+            description: "{{ $value | humanizePercentage }} of requests to / are failing with 5xx."
+
+        - alert: VisitCounterHighLatency
+          expr: |
+            histogram_quantile(0.95, sum by (le) (rate(visit_counter_http_request_duration_seconds_bucket{route="/"}[5m]))) > 0.5
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "visit-counter p95 latency above 500ms"
+            description: "95th percentile latency for / is {{ $value | humanizeDuration }}."
