@@ -26,7 +26,7 @@ def index():
     except redis.RedisError as err:
         return jsonify(error="Redis unavailable", detail=str(err)), 503
     return jsonify(
-        message="Hello from the visit counter!",
+        message="Hello from the visit counter, deployed by Jenkins!",
         visits=visits,
         pod=socket.gethostname(),
         version=os.getenv("APP_VERSION", "dev"),
