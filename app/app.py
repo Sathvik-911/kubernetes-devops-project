@@ -24,12 +24,12 @@ r = redis.Redis(
 REQUESTS = Counter(
     "visit_counter_http_requests_total",
     "Total HTTP requests handled",
-    ["method", "endpoint", "status"],
+    ["method", "route", "status"],
 )
 LATENCY = Histogram(
     "visit_counter_http_request_duration_seconds",
     "HTTP request latency in seconds",
-    ["endpoint"],
+    ["route"],
 )
 
 
