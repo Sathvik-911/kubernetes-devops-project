@@ -1,0 +1,95 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: visit-counter-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  visit-counter.json: |
+    {
+      "uid": "visit-counter",
+      "title": "Visit Counter - Golden Signals",
+      "tags": ["visit-counter", "kubernetes-devops-project"],
+      "timezone": "browser",
+      "schemaVersion": 39,
+      "refresh": "10s",
+      "time": { "from": "now-30m", "to": "now" },
+      "panels": [
+        {
+          "type": "timeseries",
+          "title": "Requests per second (route /)",
+          "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(rate(visit_counter_http_requests_total{route=\"/\"}[2m]))",
+              "legendFormat": "all pods"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Requests per second by Pod (shows deployments)",
+          "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum by (pod) (rate(visit_counter_http_requests_total{route=\"/\"}[2m]))",
+              "legendFormat": "{{pod}}"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Error rate (5xx, %)",
+          "gridPos": { "x": 0, "y": 8, "w": 8, "h": 8 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": { "defaults": { "unit": "percent", "min": 0 }, "overrides": [] },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "100 * (sum(rate(visit_counter_http_requests_total{route=\"/\", status=~\"5..\"}[2m])) or vector(0)) / sum(rate(visit_counter_http_requests_total{route=\"/\"}[2m]))",
+              "legendFormat": "error %"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Latency (route /)",
+          "gridPos": { "x": 8, "y": 8, "w": 8, "h": 8 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "histogram_quantile(0.50, sum by (le) (rate(visit_counter_http_request_duration_seconds_bucket{route=\"/\"}[2m])))",
+              "legendFormat": "p50"
+            },
+            {
+              "refId": "B",
+              "expr": "histogram_quantile(0.95, sum by (le) (rate(visit_counter_http_request_duration_seconds_bucket{route=\"/\"}[2m])))",
+              "legendFormat": "p95"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Memory per Pod",
+          "gridPos": { "x": 16, "y": 8, "w": 8, "h": 8 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": { "defaults": { "unit": "bytes" }, "overrides": [] },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum by (pod) (container_memory_working_set_bytes{namespace=\"kubernetes-learning\", pod=~\"visit-counter-.*\"})",
+              "legendFormat": "{{pod}}"
+            }
+          ]
+        }
+      ]
+    }
