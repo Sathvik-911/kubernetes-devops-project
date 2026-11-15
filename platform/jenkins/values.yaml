@@ -1,0 +1,15 @@
+# Values for the official Jenkins Helm chart (jenkins/jenkins).
+# Only settings that differ from the chart defaults are listed here.
+
+controller:
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "2"
+      memory: "2Gi"
+
+persistence:
+  enabled: true
+  size: 5Gi
