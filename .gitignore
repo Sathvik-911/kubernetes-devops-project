@@ -9,3 +9,6 @@
 
 # Local environment files
 .env
+
+# Terraform saved plans (may contain sensitive values)
+*.tfplan
