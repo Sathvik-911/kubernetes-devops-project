@@ -46,6 +46,10 @@ spec:
     }
   }
 
+  options {
+    disableConcurrentBuilds()
+  }
+
   triggers {
     pollSCM('H/5 * * * *')
   }
