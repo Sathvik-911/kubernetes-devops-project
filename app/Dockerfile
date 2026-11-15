@@ -1,6 +1,9 @@
 # Small official Python base image
 FROM python:3.12-alpine
 
+# Apply the latest Alpine security patches (base images lag behind fixes)
+RUN apk upgrade --no-cache
+
 # Don't write .pyc files; print logs immediately (important for kubectl logs)
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1

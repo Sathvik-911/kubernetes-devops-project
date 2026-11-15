@@ -20,6 +20,17 @@ spec:
         limits:
           cpu: "2"
           memory: "2Gi"
+    - name: trivy
+      image: aquasec/trivy:0.70.0@sha256:be1190afcb28352bfddc4ddeb71470835d16462af68d310f9f4bca710961a41e
+      command: ["cat"]
+      tty: true
+      resources:
+        requests:
+          cpu: "200m"
+          memory: "256Mi"
+        limits:
+          cpu: "1"
+          memory: "1Gi"
     - name: helm
       image: alpine/helm:4.3.2
       command: ["cat"]
@@ -45,7 +56,36 @@ spec:
   }
 
   stages {
-    stage('Build & Push Image') {
+    stage('Build Image') {
+      steps {
+        container('buildkit') {
+          sh '''
+            buildctl-daemonless.sh build \
+              --frontend dockerfile.v0 \
+              --local context=app \
+              --local dockerfile=app \
+              --opt build-arg:APP_VERSION="$IMAGE_TAG" \
+              --output type=docker,name="$IMAGE_REPO:$IMAGE_TAG",dest=image.tar
+          '''
+        }
+      }
+    }
+
+    stage('Security Scan (Trivy)') {
+      steps {
+        container('trivy') {
+          sh '''
+            trivy image --input image.tar \
+              --severity HIGH,CRITICAL \
+              --ignore-unfixed \
+              --exit-code 1 \
+              --no-progress
+          '''
+        }
+      }
+    }
+
+    stage('Push Image') {
       steps {
         container('buildkit') {
           withCredentials([usernamePassword(credentialsId: 'dockerhub-creds',
