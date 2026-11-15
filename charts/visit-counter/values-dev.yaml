@@ -1,0 +1,14 @@
+# Development: small and cheap. Only list what differs from values.yaml.
+replicaCount: 1
+revisionHistoryLimit: 2
+
+resources:
+  requests:
+    cpu: "25m"
+    memory: "64Mi"
+  limits:
+    cpu: "100m"
+    memory: "160Mi"
+
+service:
+  type: ClusterIP

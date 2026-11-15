@@ -3,6 +3,9 @@
 
 replicaCount: 3
 
+# How many old ReplicaSets Kubernetes keeps for rollbacks
+revisionHistoryLimit: 5
+
 image:
   repository: sathvik627/visit-counter
   # Leave empty to use the chart's appVersion as the image tag

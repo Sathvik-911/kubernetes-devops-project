@@ -2,5 +2,5 @@ apiVersion: v2
 name: visit-counter
 description: Visit counter web app (Flask + Redis) for the Kubernetes DevOps project
 type: application
-version: 0.1.0
+version: 0.2.0
 appVersion: "1.1.0"
