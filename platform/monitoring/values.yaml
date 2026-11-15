@@ -1,0 +1,72 @@
+# Values for kube-prometheus-stack, sized for a laptop Minikube cluster.
+# Only settings that differ from the chart defaults are listed.
+
+grafana:
+  # The chart's default admin password is the well-known "prom-operator".
+  # An empty value makes the chart generate a random password in a Secret.
+  adminPassword: ""
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "500m"
+      memory: "384Mi"
+
+prometheus:
+  prometheusSpec:
+    retention: 3d
+    resources:
+      requests:
+        cpu: "200m"
+        memory: "512Mi"
+      limits:
+        cpu: "1"
+        memory: "1Gi"
+    # Discover ServiceMonitors/PodMonitors/rules in every namespace,
+    # not only those labelled for this Helm release.
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+
+alertmanager:
+  alertmanagerSpec:
+    resources:
+      requests:
+        cpu: "50m"
+        memory: "64Mi"
+      limits:
+        cpu: "200m"
+        memory: "128Mi"
+
+kube-state-metrics:
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "64Mi"
+    limits:
+      cpu: "200m"
+      memory: "128Mi"
+
+prometheus-node-exporter:
+  # Mounting the host root filesystem fails on Minikube's Docker driver
+  hostRootFsMount:
+    enabled: false
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "32Mi"
+    limits:
+      cpu: "200m"
+      memory: "64Mi"
+
+# Minikube's control-plane components only listen on localhost inside the node,
+# so Prometheus cannot scrape them; disabling avoids permanent "target down" alerts.
+kubeEtcd:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeControllerManager:
+  enabled: false
+kubeProxy:
+  enabled: false

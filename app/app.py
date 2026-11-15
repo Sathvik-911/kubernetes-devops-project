@@ -1,8 +1,10 @@
 import os
 import socket
+import time
 
 import redis
-from flask import Flask, jsonify
+from flask import Flask, Response, g, jsonify, request
+from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_latest
 
 app = Flask(__name__)
 
@@ -18,7 +20,44 @@ r = redis.Redis(
     decode_responses=True,
 )
 
+# --- Prometheus metrics -------------------------------------------------------
+REQUESTS = Counter(
+    "visit_counter_http_requests_total",
+    "Total HTTP requests handled",
+    ["method", "endpoint", "status"],
+)
+LATENCY = Histogram(
+    "visit_counter_http_request_duration_seconds",
+    "HTTP request latency in seconds",
+    ["endpoint"],
+)
 
+
+def endpoint_label():
+    # Use the route pattern, never the raw path, to keep label cardinality bounded.
+    return request.url_rule.rule if request.url_rule else "unmatched"
+
+
+@app.before_request
+def start_timer():
+    g.start_time = time.perf_counter()
+
+
+@app.after_request
+def record_metrics(response):
+    if request.path != "/metrics":
+        endpoint = endpoint_label()
+        LATENCY.labels(endpoint).observe(time.perf_counter() - g.start_time)
+        REQUESTS.labels(request.method, endpoint, str(response.status_code)).inc()
+    return response
+
+
+@app.route("/metrics")
+def metrics():
+    return Response(generate_latest(), mimetype=CONTENT_TYPE_LATEST)
+
+
+# --- Application endpoints ----------------------------------------------------
 @app.route("/")
 def index():
     try:

@@ -38,3 +38,8 @@ rollingUpdate:
 
 # Seconds a Pod keeps serving before shutdown (avoids dropped requests)
 preStopSleepSeconds: 5
+
+# Let Prometheus (kube-prometheus-stack) scrape /metrics
+serviceMonitor:
+  enabled: true
+  interval: 15s
